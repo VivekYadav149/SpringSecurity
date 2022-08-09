@@ -9,33 +9,34 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 public class MySecurityConfig extends WebSecurityConfigurerAdapter {
-
-	@Autowired
-	private PasswordEncoder passwordEncoder;
-
 	
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		InMemoryUserDetailsManager userDetailsService = new InMemoryUserDetailsManager();
-		UserDetails user = User.withUsername("tom").password(passwordEncoder.encode("cruise")).authorities("read").build();
+		UserDetails user = User.withUsername("tom").password(passwordEncoder().encode("cruise")).authorities("read").build();
 		userDetailsService.createUser(user);
 		
-		auth.userDetailsService(userDetailsService);
+		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
 	}
+
+//	@Override
+//	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//		auth.authenticationProvider(authenticationProvider);
+//	}
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		http.formLogin();
+		http.httpBasic();
 		http.authorizeRequests().anyRequest().authenticated();
 	}
+
+    @Bean
+    BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 	
-	@Bean
-	public BCryptPasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
 }
